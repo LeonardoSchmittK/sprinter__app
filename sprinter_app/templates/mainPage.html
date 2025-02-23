@@ -1,0 +1,1075 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sprinter</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Nunito:ital,wght@0,200..1000;1,200..1000&family=Varela+Round&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Nunito:ital,wght@0,200..1000;1,200..1000&family=Sora:wght@100..800&family=Varela+Round&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root { 
+            --grey-light: #f6f6f654;
+            --grey-light-darker: #fcfcfc;
+            --blue-dark:#122D46;
+            --blue-light:#B4DBFF;
+            --red-light:#FE5E61;
+            --red-darker:#812424;
+            --text-color-grey:#686565;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        .board {
+            width: 90%;
+            background-color: var(--grey-light);
+            padding: 1em;
+            border-radius: 5px;
+            display: none;
+            gap: 1em;
+            flex-direction: column;
+        }
+
+        .board section {
+            flex: 1;
+            padding: 1em;
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.7em;
+            overflow-y: auto;
+            transition: border-color 0.2s ease;
+            background-color: rgba(240, 240, 240, 0.22);
+            border: 3px solid transparent;
+        }
+
+        .board section.drag-over {
+            border: 3px solid var(--blue-light);
+
+        }
+
+      
+
+        .userImg {
+             width: 55px;
+             height: 55px;
+             border-radius: 100%;
+        }
+
+        .userCard {
+            display:flex;
+            flex-direction: row;
+            gap: 10px;
+            margin: 16px;
+            background-color: var(--grey-light);
+            width: fit-content;
+            min-width: 300px;
+            padding: 14px;
+            border-radius: 12px;
+            position: relative;
+            height: 120px;
+        }  
+
+        .userCard__salutation {
+             font-family: Inter,'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+             font-weight: bold;
+        }
+
+        .userCard__description {
+            font-family: Inter,'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-color-grey);
+        }
+
+        .board-sections {
+             display: flex;
+             flex-direction: row;
+             gap: 15px;
+        }
+
+    .popup,.popupAdd,.popupAddGuest {
+        display: none;
+        position: fixed; 
+        top: 50%; 
+        left: 50%; 
+        transform: translate(-50%, -50%);
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
+        padding: 20px; 
+        width: 100vw; 
+        height: 100vh;
+        text-align: center; 
+        z-index: 1000; 
+        background-color: rgba(128, 128, 128, 0.527);
+        font-family: Inter, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+}
+
+.popupMessage {
+     background-color: #fff;
+     width: fit-content;
+     min-width: 30%;
+     margin: auto;
+     padding: 26px;
+     border-radius: 6px;
+   
+}
+
+.popupMessage form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+}
+
+.inputWrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    justify-content: left;
+    align-items:start;
+    width: 100%;
+}
+
+.inputWrapper label {
+     font-size: 12px;
+     color: var(--blue-dark);
+}
+
+
+
+.visible {
+    display: block !important;
+}
+
+.logout-btn {
+    background-color: var(--red-light);
+    color: var(--red-darker);
+    outline: 0;
+    padding: 5px;
+    border-radius: 100%;
+    border: 0;
+    cursor: pointer;
+    margin-top: 12px;
+    position: absolute;
+    top: 0;
+    right:  10px;
+    padding: 6px;
+}
+
+.logout-btn__icon {
+    width: 18px;
+    height: 15px;
+    transform: rotate(270deg);
+     stroke-width: 3px;
+}
+
+button:hover {
+     cursor: pointer;
+}
+
+
+    .addSprintBtn {
+        width: 100px;
+        display: flex;
+        justify-content: space-between ;
+        align-items: center;
+        background-color: var(--blue-light);
+        /* position: absolute; */
+        padding: 8px 12px;
+        border-radius: 12px;
+        font-family: Inter;
+        font-weight: bold;
+        bottom: 12px;
+        margin-top: 15px;
+        right:12px;
+        transition: all 100ms linear;
+        position: absolute;
+    }
+
+    .addSprintBtn:hover {
+        box-shadow: 1px 1px 70px var(--blue-light);
+        transition: all 100ms linear;
+    }
+
+
+    .addSprintBtn__icon {
+        width: 20px;
+        height: 20px;
+        stroke-width: 3.3px;
+    }
+
+    button {
+        outline: 0;
+        border: 0;
+    }
+
+    .sprint-info {
+        display:flex;
+        flex-direction: row;
+        gap: 10px;
+        margin: 16px;
+        background-color: var(--grey-light);
+        width: fit-content;
+        padding: 14px;
+        border-radius: 12px;
+        position: relative;
+        width: 30%;
+        padding-bottom: 20px;
+    }
+
+    .sprint-info__schedule, .sprint-info__stat {
+         display: flex;
+         flex-direction: row;
+         justify-content: space-between;
+         gap: 15px;
+         padding: 8px 12px;
+         border-radius: 12px;
+         background-color: #fff;
+         width: fit-content
+    }
+
+
+
+    .sprint-info__stat svg {
+         width: 20px;
+         height: 20px;
+    }
+
+    .sprint-info__actionsBtns {
+         display: flex;
+         flex-direction: row;
+         gap: 10px;
+    }
+
+    .sprint-info__actionsBtns button, .addTaskBtn {
+        width: fit-content;
+        display: flex;
+        justify-content: space-between ;
+        align-items: center;
+        gap: 15px;
+        background-color: var(--blue-light);
+        color: var(--blue-dark);
+        padding: 8px 12px;
+        border-radius: 12px;
+        font-family: Inter;
+        font-weight: bold;
+        transition: all 100ms linear;
+    }
+
+    .btnsWrapperPopUp {
+         display: flex;
+         width: 100%;
+         flex-direction: row;
+         align-items: center;
+         justify-content: center;
+         margin-top: 50px;
+         gap: 15px;
+    }
+
+    .closePopUpBtn {
+        width: fit-content;
+        display: flex;
+        justify-content: space-between ;
+        align-items: center;
+        gap: 15px;
+        background-color: var(--grey-light);
+        color: var(--blue-dark);
+        padding: 8px 12px;
+        border-radius: 12px;
+        font-family: Inter;
+        font-weight: bold;
+        transition: all 100ms linear;
+    }
+
+    .sprint-info__actionsBtns svg {
+         width: 15px;
+         height: 15px;
+    }
+
+    .sprint-info__title {
+         font-family: Sora, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .sprint-info__mainInfo {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+    }
+
+    .sprint-info__guestsPicturesWrapper {
+         width: fit-content;
+         height: 50px
+    }
+
+    .sprint-info__dropdownWrapper { 
+        position: absolute;
+        bottom: 7px;
+        right: 7px;
+        padding: 6px;
+        background-color: var(--blue-light);
+        border-radius: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+    }
+
+    .sprint-info__dropdownWrapper svg {
+         width: 24px;
+         height: 24px;
+         stroke-width: 3px;
+        pointer-events: none;
+        transition: all 150ms linear;
+
+    }
+
+    .sprint-info__dropdownWrapper.active svg{
+        transform: rotate(180deg);
+        pointer-events: none;
+        transition: all 150ms linear;
+    }
+
+    .input {
+        border: 1px solid var(--grey-light-darker);
+        padding: 8px;
+        border-radius: 4px;         
+        font-size: 16px;
+        width: 100%;
+    }
+
+
+    .custom-select {
+        position: relative;
+        width: 100%;
+        border: 1px solid var(--grey-light-darker);
+    }
+    .selected-option {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        padding: 5px;
+        border-radius: 5px;
+    }
+    .selected-option img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        margin-right: 10px;
+    }
+
+    #selected-name {
+         font-family: Inter, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .dropdown {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background: white;
+        border: 1px solid var(--grey-light-darker);
+        border-radius: 5px;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+    .dropdown div {
+        display: flex;
+        align-items: center;
+        padding: 5px;
+        cursor: pointer;
+    }
+    .dropdown div img {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        margin-right: 10px;
+    }
+    .dropdown div:hover {
+        background: var(--grey-light-darker);
+    }
+    
+    input::placeholder {
+         color: rgba(128, 128, 128, 0.479)
+    }
+
+
+    .responsibleInfo {
+         display: flex;
+         flex-direction: row;
+         justify-content: center;
+         align-items: center;
+
+    }
+
+    .board-sections__taskCard {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        background-color: var(--blue-light);
+        color: var(--blue-dark);
+        font-weight: bold;
+        padding: 1em;
+        border-radius: 16px;
+        cursor: grab;
+        text-align: left;
+
+    }
+
+    .board-sections__taskCard p { 
+         flex: 1
+    }
+
+    </style>
+</head>
+<body>
+
+    {% load socialaccount %}
+
+    {% if is_authenticated %}
+        <article class="userCard">
+
+        {% if userPicture %}
+            <img class="userImg" src="{{ userPicture }}" alt="Profile Picture" style="transform:scaleX(-1)">
+        {% endif %}
+        <div>
+            <h3 class="userCard__salutation">Olá, {{ username }}</h3>
+            <p class="userCard__description"> {{quantitySprints}} Sprints</p>
+            <form action="{% url 'account_logout' %}" method="post">
+                {% csrf_token %}
+                <button style="transform: scaleX(-1);" class="logout-btn" type="submit">
+                    <svg class="logout-btn__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"  stroke="currentColor" class="size-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
+                      </svg>
+                </button>
+            </form>
+            
+            <button class="addSprintBtn" onclick="document.querySelector('.popup').classList.add('visible')">
+                <svg class="addSprintBtn__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                  </svg>
+                SPRINT
+            </button>
+            
+        </div>
+    </article>
+
+    <div class="popup invisible " id="popupSprint">
+        <div class="popupMessage">
+            <form action="{% url 'create_sprint' %}" method="post">
+                {% csrf_token %}
+
+                <h2>Qual nome da Sprint?</h2>
+                
+                <div class="inputWrapper">
+                    <label for="name">Nome</label>
+                    <input class="input" type="text" name="name" placeholder="Nome da Sprint" required>
+                </div>
+
+                <div class="inputWrapper">
+                    <label for="name">Descrição</label>
+                    <input class="input" type="text" name="description" placeholder="Escreva aqui em poucas palavras..." required>
+                </div>
+                
+                <div class="inputWrapper">
+                    <label for="start_date">Data de Início</label>
+                    <input class="input" type="date" name="start_date" required>
+                </div>
+                
+                <div class="inputWrapper">
+                    <label for="end_date">Data de Término</label>
+                    <input class="input" type="date" name="end_date" required>
+                </div>
+                
+                <div class="btnsWrapperPopUp">
+                    <button class="closePopUpBtn" type="button" onclick="document.querySelector('#popupSprint').classList.remove('visible')">Fechar</button>
+                    <button class="addTaskBtn" type="submit">Criar Sprint!</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    {% else %}
+        <h1>Seja bem-vindo!</h1>
+        <a href="{% provider_login_url 'google' %}">Login with Google</a>
+    {% endif %}
+
+
+    {% if is_authenticated %}
+
+    
+    {% for sprint in sprints %}
+<div class="sprint-info" id="b-{{sprint.id}}">
+    <div class="sprint-info__mainInfo">
+        <h2 class="sprint-info__title">{{ sprint.name }}</h2>
+        <p>{{sprint.description}}</p>
+        <section class="sprint-info__guestsPicturesWrapper">
+            {% for participant in sprint.users %}
+              <span>
+                <img  src="{{ participant.photo }}" alt="{{ participant.first_name }}" style="width:40px;height:40px;border-radius:50%;transform: scaleX(-1);">
+              </span>{% if not forloop.last %}, {% endif %}
+
+            {% empty %}
+            {% endfor %}
+  <!-- Caso a lista esteja vazia -->
+          </section>
+           <!-- Botão com referência específica para o popup deste sprint -->
+        
+    </div>
+
+        <div class="sprint-info__details">
+
+            <div class="sprint-info__schedule">
+                    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M3.78125 1.12836V2.72211M11.2187 1.12836V2.72211M1.125 12.2846V4.31586C1.125 3.89317 1.29291 3.48779 1.5918 3.18891C1.89068 2.89002 2.29606 2.72211 2.71875 2.72211H12.2812C12.7039 2.72211 13.1093 2.89002 13.4082 3.18891C13.7071 3.48779 13.875 3.89317 13.875 4.31586V12.2846M1.125 12.2846C1.125 12.7073 1.29291 13.1127 1.5918 13.4116C1.89068 13.7104 2.29606 13.8784 2.71875 13.8784H12.2812C12.7039 13.8784 13.1093 13.7104 13.4082 13.4116C13.7071 13.1127 13.875 12.7073 13.875 12.2846M1.125 12.2846V6.97211C1.125 6.54942 1.29291 6.14404 1.5918 5.84516C1.89068 5.54627 2.29606 5.37836 2.71875 5.37836H12.2812C12.7039 5.37836 13.1093 5.54627 13.4082 5.84516C13.7071 6.14404 13.875 6.54942 13.875 6.97211V12.2846" stroke="#2B2727" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <p>
+                        {{ sprint.start_date }} -  {{ sprint.end_date }}
+                    </p>
+            </div>
+
+            <div class="sprint-info__stat">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                </svg>
+                <p>
+                    {{ sprint.stats.doneTasksQuantity}} / {{ sprint.stats.tasksQuantity}} | 
+                    {{ sprint.stats.percentageDone}}%
+                </p>
+        </div>
+
+        <div data-id="{{sprint.id}}" class="sprint-info__dropdownWrapper active">
+            <svg data-id="{{sprint.id}}" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+              </svg>
+        </div>
+
+
+    </div>
+
+</div>
+
+<div class="board" id="b-{{sprint.id}}">
+    <div class="sprint-info__actionsBtns">
+        <button class="actionBtns__btn" onclick="document.querySelector('#popupAdd-{{ sprint.id }}').classList.add('visible')">+ Tarefa</button>
+        <button class="actionBtns__btn" onclick="document.querySelector('#popupAddGuest-{{ sprint.id }}').classList.add('visible')">+ Convidado</button>
+        <button class="actionBtns__btn" onclick="document.querySelector('#popupAddGuest-{{ sprint.id }}').classList.add('visible')">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" />
+              </svg>
+            Repositório
+        </button>
+        <button class="actionBtns__btn" onclick="document.querySelector('#popupFinishSprint-{{ sprint.id }}').classList.add('visible')">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8.25v-1.5m0 1.5c-1.355 0-2.697.056-4.024.166C6.845 8.51 6 9.473 6 10.608v2.513m6-4.871c1.355 0 2.697.056 4.024.166C17.155 8.51 18 9.473 18 10.608v2.513M15 8.25v-1.5m-6 1.5v-1.5m12 9.75-1.5.75a3.354 3.354 0 0 1-3 0 3.354 3.354 0 0 0-3 0 3.354 3.354 0 0 1-3 0 3.354 3.354 0 0 0-3 0 3.354 3.354 0 0 1-3 0L3 16.5m15-3.379a48.474 48.474 0 0 0-6-.371c-2.032 0-4.034.126-6 .371m12 0c.39.049.777.102 1.163.16 1.07.16 1.837 1.094 1.837 2.175v5.169c0 .621-.504 1.125-1.125 1.125H4.125A1.125 1.125 0 0 1 3 20.625v-5.17c0-1.08.768-2.014 1.837-2.174A47.78 47.78 0 0 1 6 13.12M12.265 3.11a.375.375 0 1 1-.53 0L12 2.845l.265.265Zm-3 0a.375.375 0 1 1-.53 0L9 2.845l.265.265Zm6 0a.375.375 0 1 1-.53 0L15 2.845l.265.265Z" />
+              </svg>
+              
+              
+            Concluir Sprint
+        </button>
+
+
+          
+    </div>
+    <!-- Popup único para esta sprint -->
+    <div id="popupAdd-{{ sprint.id }}" class="popupAdd invisible">
+        <div class="popupMessage">
+            <form id="createTaskForm" action="{% url 'create_task' sprint.id %}" method="post">
+                {% csrf_token %}
+                <h2>O que precisa ser feito?</h2>
+                <div class="inputWrapper">
+                    <label for="name">Nome</label>
+                    <input class="input" type="text" name="name" placeholder="Nome da tarefa" required>
+                </div>
+                <div class="inputWrapper">
+                    <label for="hours">Horas</label>
+                    <input class="input" type="number" name="storyPoints" placeholder="Story Points" required>
+                </div>
+                <div class="inputWrapper">
+                    <label for="responsible">Responsável</label>
+                    <div class="custom-select">
+                        <div class="selected-option" onclick="toggleDropdown()">
+                            <img  id="selected-img" src="https://ui-avatars.com/api/?name=?" alt="user picture">
+                            <span id="selected-name">Selecione um responsável</span>
+                        </div>
+                        <div class="dropdown" id="dropdown">
+                            {% for participant in sprint.users %}
+                            <div onclick="selectOption('{{ participant.first_name }}', '{{ participant.photo }}','{{participant.email}}')">
+                                <img style="transform: scaleX(-1);" src="{{ participant.photo }}" alt="{{ participant.first_name }}">
+                                <span>{{ participant.first_name }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <input type="hidden" name="responsible" id="selected-value" required>
+                    </div>
+                </div>
+                <div class="btnsWrapperPopUp">
+                    <button class="closePopUpBtn" onclick="document.querySelector('#popupAdd-{{ sprint.id }}').classList.remove('visible')">Fechar</button>
+                    <button class="addTaskBtn addTaskBtnActive" type="button" ">Criar tarefa</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="popupAddGuest-{{ sprint.id }}" class="popupAddGuest invisible">
+        <div class="popupMessage">
+            <form action="{% url 'add_guest' sprint.id %}" method="post">
+                {% csrf_token %}
+                <h2>Quem mandar à bordo?</h2>
+                <div class="inputWrapper">
+                    <label for="guestEmail">Email do convidado</label>
+                    <input class="input" type="input" type="email" name="guestEmail" placeholder="" required>
+                </div>
+                <div class="btnsWrapperPopUp">
+                    <button class="closePopUpBtn" onclick="document.querySelector('#popupAddGuest-{{ sprint.id }}').classList.remove('visible')">Fechar</button>
+                    <button class="addTaskBtn" type="submit">Convidar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="popupFinishSprint-{{ sprint.id }}" class="popupAddGuest invisible">
+        <div class="popupMessage">
+          <form id="finishSprintForm-{{ sprint.id }}" action="{% url 'finish_sprint' sprint.id %}" method="post">
+            {% csrf_token %}
+            <h2>Finalizar Sprint?</h2>
+            <p>Essa ação removerá a sprint para sempre.</p>
+      
+            <div class="btnsWrapperPopUp">
+              <button class="closePopUpBtn" type="button" onclick="document.querySelector('#popupFinishSprint-{{ sprint.id }}').classList.remove('visible')">Fechar</button>
+              <button class="addTaskBtn" type="button" onclick="finishSprint('{{ sprint.id }}')">Concluir</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+    <div class="board-sections">
+        <section data-section="todo" class="sectionDroppable">
+            <h3>todo</h3>
+            {% for task in sprint.tasks %}
+
+                {% if task.status == 'todo' %}
+                    <div class="board-sections__taskCard card" draggable="true" class="card" id="{{ task.id }}">
+                        <p>
+                            {{ task.name }}
+                        </p>
+                        <div class="responsibleInfo">
+                                <div class="storyPoints">
+                                    {{task.storyPoints}}
+                                </div>
+                                <img src="{{task.responsible.picture}}" alt="" style="width:40px;height:40px;border-radius:50%;transform: scaleX(-1);">
+                        </div>
+
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </section>
+
+        <section data-section="in-progress" class="sectionDroppable">
+            <h3>in_progress</h3>
+            {% for task in sprint.tasks %}
+                {% if task.status == 'in_progress' %}
+                <div class="board-sections__taskCard card" draggable="true" class="card" id="{{ task.id }}">
+                    <p>
+                        {{ task.name }}
+                    </p>
+                    <div class="responsibleInfo">
+                            <div class="storyPoints">
+                                {{task.storyPoints}}
+                            </div>
+                            <img src="{{task.responsible.picture}}" alt="" style="width:40px;height:40px;border-radius:50%;transform: scaleX(-1);">
+                    </div>
+
+                </div>
+                {% endif %}
+            {% endfor %}
+        </section>
+
+        <section data-section="done" class="sectionDroppable">
+            <h3>done</h3>
+            {% for task in sprint.tasks %}
+                {% if task.status == 'done' %}
+                <div class="board-sections__taskCard card" draggable="true" class="card" id="{{ task.id }}">
+                    <p>
+                        {{ task.name }}
+                    </p>
+                    <div class="responsibleInfo">
+                            <div class="storyPoints">
+                                {{task.storyPoints}}
+                            </div>
+                            <img src="{{task.responsible.picture}}" alt="" style="width:40px;height:40px;border-radius:50%;transform: scaleX(-1);">
+                    </div>
+
+                </div>
+                {% endif %}
+            {% endfor %}
+        </section>
+    </div>
+</div>
+{% endfor %}
+
+{% endif %}
+
+
+
+    
+    <form hidden action="{% url 'update_task_state'%}"class="formUpdateState" method="post">
+        {% csrf_token %}
+        <input type="text" name="state">
+        <input type="text" name="id">
+    </form>
+    
+<!-- 
+    <div class="board">
+        <section data-section="todo">
+            <div draggable="true" class="card" id="card1">
+                <p>Fazer o jantar</p>
+            </div>
+        </section>
+        <section data-section="in-progress">
+        </section>
+        <section data-section="done">
+        </section>
+    </div> -->
+
+    <script>
+        const cards = document.querySelectorAll('.card');
+        const sections = document.querySelectorAll('.sectionDroppable');
+
+        cards.forEach(card => {
+            card.addEventListener('dragstart', event => {
+                event.dataTransfer.setData('text/plain', card.id);
+                card.classList.add('dragging');
+            });
+
+            card.addEventListener('dragend', () => {
+                card.classList.remove('dragging');
+            });
+        });
+
+        sections.forEach(section => {
+            section.addEventListener('dragover', event => {
+                event.preventDefault(); 
+                section.classList.add('drag-over');
+            });
+
+            section.addEventListener('dragleave', () => {
+                section.classList.remove('drag-over');
+            });
+
+            section.addEventListener('drop', async  event => {
+                event.preventDefault();
+                const cardId = event.dataTransfer.getData('text/plain');
+                const card = document.getElementById(cardId);
+                const cardIdd = card.id
+                section.appendChild(card); 
+                const newStateForTask = section.querySelector("h3").innerText
+                section.classList.remove('drag-over');
+
+
+
+                try {
+            const response = await fetch("{% url 'update_task_state' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": "{{ csrf_token }}"
+                },
+                body: JSON.stringify({
+                    id: cardIdd,
+                    status: newStateForTask
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                console.log("Task updated successfully:", result.message);
+            } else {
+                console.error("Error updating task:", result.message);
+            }
+        } catch (error) {
+            console.error("Error:", error);
+        }
+
+            });
+        });
+    </script>
+    <script>
+        function handleCredentialResponse(response) {
+            console.log("Encoded JWT ID token: " + response.credential);
+            // Send the JWT to your server for verification
+            fetch('/google-login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: response.credential })
+            })
+            .then(res => res.json())
+            .then(data => {
+                console.log(data);
+                if (data.success) {
+                    alert("Logged in successfully!");
+                    // Redirect or update UI as needed
+                } else {
+                    alert("Login failed!");
+                }
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", makeGuestsPicturesTogether);
+
+function makeGuestsPicturesTogether() {
+    const imgs = [...document.querySelectorAll(".sprint-info__guestsPicturesWrapper img")].reverse();
+    let counter = 1;
+    imgs.forEach((img, id) => { 
+        console.log(counter + 15);
+        img.style.position = "absolute";
+        img.style.left = `${counter * 22}px`;
+        counter++;
+    });
+}
+
+const dropdownWrappers = document.querySelectorAll('.sprint-info__dropdownWrapper');
+
+let dropdownState = JSON.parse(localStorage.getItem('dropdownState')) || {};
+
+dropdownWrappers.forEach(wrapper => {
+  const boardId = wrapper.getAttribute('data-id');
+  if (dropdownState[boardId]) {
+    wrapper.classList.add("active");
+    const board = document.querySelector(`.board#b-${boardId}`);
+    if (board) {
+      board.style.display = "none";
+    }
+  } else {
+    wrapper.classList.remove("active");
+    const board = document.querySelector(`.board#b-${boardId}`);
+    if (board) {
+      board.style.display = "flex";
+    }
+  }
+  wrapper.addEventListener('click', toggleDropdownBoard);
+});
+
+
+function toggleDropdownBoard(evt) {
+  const wrapper = evt.currentTarget;
+  const boardId = wrapper.getAttribute("data-id");
+  
+  wrapper.classList.toggle("active");
+
+  dropdownState[boardId] = wrapper.classList.contains("active");
+  
+  localStorage.setItem('dropdownState', JSON.stringify(dropdownState));
+
+  const board = document.querySelector(`.board#b-${boardId}`);
+  if (board) {
+    if (wrapper.classList.contains("active")) {
+      board.style.display = "none";
+    } else {
+      board.style.display = "flex";
+    }
+  }
+}
+
+
+
+    </script>
+    <script>
+        function finishSprint(sprintId) {
+          const form = document.getElementById(`finishSprintForm-${sprintId}`);
+          const formData = new FormData(form);
+      
+          fetch(form.action, {
+            method: form.method,  
+            headers: {
+              'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: formData
+          })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Erro na requisição');
+            }
+            return response.json(); 
+          })
+          .then(data => {
+            let newN = Number(document.querySelector(".userCard__description").innerText.split(" ")[0])-1
+            document.querySelector(".userCard__description").innerHTML = newN + " Sprints"
+            console.log('Sprint finalizada com sucesso:', data);
+            document.querySelector(`#popupFinishSprint-${sprintId}`).classList.remove('visible');
+            [...document.querySelectorAll(".board#b-"+sprintId),...document.querySelectorAll("#b-"+sprintId)].forEach((item)=>document.body.removeChild(item))
+
+          })
+          .catch(error => {
+            console.error('Erro ao finalizar sprint:', error);
+          });
+        }
+      </script>
+      <script>
+        let counterClickedOptions = 0
+        document.querySelector(".addTaskBtnActive").addEventListener("click", submitAddTaskForm)
+
+        function submitAddTaskForm(e){
+             e.preventDefault()
+             if(counterClickedOptions>=1) {
+                document.querySelector("#createTaskForm").submit()
+             }
+        }
+
+        function toggleDropdown() {
+            document.getElementById('dropdown').style.display = 
+                document.getElementById('dropdown').style.display === 'block' ? 'none' : 'block';
+        }
+        function selectOption(name, photo, email) {
+            document.getElementById('selected-img').src = photo;
+            document.getElementById('selected-name').textContent = name;
+            document.getElementById('selected-value').value = email;
+            document.getElementById('dropdown').style.display = 'none';
+            counterClickedOptions++
+        }
+    
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.custom-select')) {
+                document.getElementById('dropdown').style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Steam Library</title>
+    <style>
+        * {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .games-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .game-card {
+            width: 200px;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            transition: box-shadow 0.3s;
+        }
+
+
+        .game-card img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 4px;
+            transition: 100ms linear;
+            object-fit: cover;
+        }
+
+        .game-title {
+            margin: 10px 0;
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    {% load socialaccount %}
+
+    {% if is_authenticated %}
+        <h1>Welcome, {{ username }}</h1>
+        <p>Email: {{ email }}</p>
+        {% if google_data.picture %}
+            <img src="{{ google_data.picture }}" alt="Profile Picture">
+        {% endif %}
+        <p>Google Profile: <a href="{{ google_data.link }}" target="_blank">View Profile</a></p>
+        
+        <h2>Your Steam Library:</h2>
+        {% if steam_games %}
+            <div class="games-container">
+                {% for game in steam_games %}
+                    <div class="game-card">
+                        <img id="steam-img" src="https://cdn.cloudflare.steamstatic.com/steam/apps/{{ game.appid }}/library_600x900.jpg"   crossOrigin="anonymous" alt="{{ game.name }}">
+                        <p class="game-title">{{ game.name }}</p>
+                        <p>Playtime: {{ game.playtime_forever|default:0 }} minutes</p>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>No games found in your Steam library.</p>
+        {% endif %}
+    {% else %}
+        <h1>Welcome, Guest!</h1>
+        <a href="{% provider_login_url 'google' %}">Login with Google</a>
+    {% endif %}
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.4.0/color-thief.umd.js"></script>
+<script>
+    console.log("{{google_data|safe|escapejs}}");
+    class getDomEl{
+        constructor(el) {
+             
+        }
+
+        get(selector, fatherSelector) {
+    return fatherSelector
+        ? document.querySelector(fatherSelector).querySelector(selector)
+        : document.querySelector(selector);
+}
+
+getAll(selector, fatherSelector) {
+    return fatherSelector
+        ? document.querySelector(fatherSelector).querySelectorAll(selector)
+        : document.querySelectorAll(selector);
+}
+    }
+    const dom = new getDomEl()
+    const colorThief = new ColorThief();
+
+    function handleLoad() {
+        try {
+
+            dom.getAll("#steam-img").forEach((i) =>
+i.addEventListener(
+    "mouseenter",
+    (evt) => (evt.target.style.boxShadow = "1px 10px 80px rgba(" + colorThief.getColor(evt.target)+",0.5)")
+)
+);
+
+dom.getAll("#steam-img").forEach((i) =>
+i.addEventListener("mouseout", (evt) => (evt.target.style.boxShadow = "none"))
+);
+        } catch (error) {
+            console.error('Color detection failed:', error);
+        }
+    }
+
+
+
+    handleLoad()
+</script>
+</body>
+</html> -->
