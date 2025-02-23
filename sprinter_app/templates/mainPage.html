@@ -467,7 +467,7 @@ button:hover {
         </div>
     </article>
 
-    <div class="popup invisible " id="popupSprint">
+    <div  class="popup invisible " id="popupSprint">
         <div class="popupMessage">
             <form action="{% url 'create_sprint' %}" method="post">
                 {% csrf_token %}
@@ -586,7 +586,7 @@ button:hover {
           
     </div>
     <!-- Popup único para esta sprint -->
-    <div id="popupAdd-{{ sprint.id }}" class="popupAdd invisible">
+    <div id="popupAdd-{{ sprint.id }}" class="popupAdd invisible popup">
         <div class="popupMessage">
             <form id="createTaskForm" action="{% url 'create_task' sprint.id %}" method="post">
                 {% csrf_token %}
@@ -625,7 +625,7 @@ button:hover {
         </div>
     </div>
 
-    <div id="popupAddGuest-{{ sprint.id }}" class="popupAddGuest invisible">
+    <div id="popupAddGuest-{{ sprint.id }}" class="popupAddGuest invisible popup">
         <div class="popupMessage">
             <form action="{% url 'add_guest' sprint.id %}" method="post">
                 {% csrf_token %}
@@ -642,7 +642,7 @@ button:hover {
         </div>
     </div>
 
-    <div id="popupFinishSprint-{{ sprint.id }}" class="popupAddGuest invisible">
+    <div id="popupFinishSprint-{{ sprint.id }}" class="popupAddGuest invisible popup">
         <div class="popupMessage">
           <form id="finishSprintForm-{{ sprint.id }}" action="{% url 'finish_sprint' sprint.id %}" method="post">
             {% csrf_token %}
@@ -921,6 +921,20 @@ function toggleDropdownBoard(evt) {
         }
       </script>
       <script>
+        const popups = [...document.querySelectorAll(".popup")];
+
+        popups.forEach((popup) => {
+        popup.addEventListener("click", (e) => {
+            if (e.target === popup) {
+            popup.classList.toggle("visible");
+            }
+        });
+        });
+
+      </script>
+      <script>
+
+
         let counterClickedOptions = 0
         document.querySelector(".addTaskBtnActive").addEventListener("click", submitAddTaskForm)
 

@@ -168,17 +168,20 @@ def create_sprint(request):
         end_date = request.POST.get('end_date')
         description = request.POST.get('description')
 
-        # Save the new Sprint to the database
-        Sprint.objects.create(
+        sprint = Sprint.objects.create(
             name=name,
             start_date=start_date,
             end_date=end_date,
             description=description,
-            created_by=request.user
+            created_by=request.user,
         )
+        
+        sprint.users.add(request.user)
+        
         return redirect('mainPage')
 
     return render(request, 'mainPage.html')
+
 
 
 def create_task(request, sprint_id):
