@@ -411,6 +411,7 @@ button:hover {
          flex-direction: row;
          justify-content: center;
          align-items: center;
+         position: relative;
 
     }
 
@@ -426,12 +427,34 @@ button:hover {
         border-radius: 16px;
         cursor: grab;
         text-align: left;
+        overflow: hidden;
+
 
     }
 
     .board-sections__taskCard p { 
          flex: 1
     }
+
+    /* img creator */
+
+    .creator {
+  position: relative; /* Ensure the pseudo-element is positioned relative to the image */
+  border: 1px solid var(--blue-light);
+        border-radius: 100%;
+}
+
+.creator::after {
+  content: "👑"; 
+  position: absolute; 
+  top: 0; 
+  left: -5px;
+  font-size: 20px; 
+  z-index: 1; 
+  width: 5px;
+  height: 5px;
+  transform: scale(0.5);
+}
 
     </style>
 </head>
@@ -517,17 +540,22 @@ button:hover {
     <div class="sprint-info__mainInfo">
         <h2 class="sprint-info__title">{{ sprint.name }}</h2>
         <p>{{sprint.description}}</p>
-        <section class="sprint-info__guestsPicturesWrapper">
-            {% for participant in sprint.users %}
-              <span>
-                <img  src="{{ participant.photo }}" alt="{{ participant.first_name }}" style="width:40px;height:40px;border-radius:50%;transform: scaleX(-1);">
-              </span>{% if not forloop.last %}, {% endif %}
+        {% load custom_filters %}
 
-            {% empty %}
-            {% endfor %}
-  <!-- Caso a lista esteja vazia -->
-          </section>
-           <!-- Botão com referência específica para o popup deste sprint -->
+<section class="sprint-info__guestsPicturesWrapper" style="position: relative; width: 40px; height: 40px;">
+    {% for participant in sprint.users %}
+        
+        <span  class="{% if participant.isCreator %}creator{% endif %}" style="position: absolute; top: 0; left: 0; transform: translateX({{ forloop.counter0|multiply:30 }}px) translateY({{ forloop.counter0|multiply:1 }}px);">
+      <img 
+        src="{{ participant.photo }}" 
+        alt="{{ participant.first_name }}" 
+        style="width:40px;height:40px;border-radius:50%;transform: scaleX(-1);" 
+      >
+    </span>
+  {% empty %}
+    <!-- No participants -->
+  {% endfor %}
+</section>
         
     </div>
 
@@ -602,15 +630,20 @@ button:hover {
                 <div class="inputWrapper">
                     <label for="responsible">Responsável</label>
                     <div class="custom-select">
-                        <div class="selected-option" onclick="toggleDropdown()">
-                            <img  id="selected-img" src="https://ui-avatars.com/api/?name=?" alt="user picture">
+                        <div class="selected-option">
+                            <img  id="selected-img" src="https://ui-avatars.com/api/?name=?" alt="user picture" >
                             <span id="selected-name">Selecione um responsável</span>
                         </div>
                         <div class="dropdown" id="dropdown">
                             {% for participant in sprint.users %}
-                            <div onclick="selectOption('{{ participant.first_name }}', '{{ participant.photo }}','{{participant.email}}')">
-                                <img style="transform: scaleX(-1);" src="{{ participant.photo }}" alt="{{ participant.first_name }}">
-                                <span>{{ participant.first_name }}</span>
+                            <div 
+                                class="dropdownOpened"
+                                data-first-name="{{ participant.first_name }}" 
+                                data-photo="{{ participant.photo }}" 
+                                data-email="{{ participant.email }}"
+                                >
+                                <img style="pointer-events: none;" style="transform: scaleX(-1);" src="{{ participant.photo }}" alt="{{ participant.first_name }}">
+                                <span style="pointer-events: none;">{{ participant.first_name }}</span>
                             </div>
                             {% endfor %}
                         </div>
@@ -667,11 +700,11 @@ button:hover {
                         <p>
                             {{ task.name }}
                         </p>
-                        <div class="responsibleInfo">
-                                <div class="storyPoints">
+                        <div class="responsibleInfo" >
+                                <div class="storyPoints" style="padding-right: 26px;">
                                     {{task.storyPoints}}
                                 </div>
-                                <img src="{{task.responsible.picture}}" alt="" style="width:40px;height:40px;border-radius:50%;transform: scaleX(-1);">
+                                <img src="{{task.responsible.picture}}" alt="" style="width:40px;height:40px;border-radius:50%;transform: scaleX(-1); position: absolute; bottom: -18px; right:-12px">
                         </div>
 
                     </div>
@@ -683,16 +716,16 @@ button:hover {
             <h3>in_progress</h3>
             {% for task in sprint.tasks %}
                 {% if task.status == 'in_progress' %}
-                <div class="board-sections__taskCard card" draggable="true" class="card" id="{{ task.id }}">
+                <div class="board-sections__taskCard card"  draggable="true" class="card" id="{{ task.id }}">
                     <p>
                         {{ task.name }}
                     </p>
-                    <div class="responsibleInfo">
-                            <div class="storyPoints">
-                                {{task.storyPoints}}
-                            </div>
-                            <img src="{{task.responsible.picture}}" alt="" style="width:40px;height:40px;border-radius:50%;transform: scaleX(-1);">
-                    </div>
+                    <div class="responsibleInfo" >
+                        <div class="storyPoints" style="padding-right: 26px;">
+                            {{task.storyPoints}}
+                        </div>
+                        <img src="{{task.responsible.picture}}" alt="" style="width:40px;height:40px;border-radius:50%;transform: scaleX(-1); position: absolute; bottom: -18px; right:-12px">
+                </div>
 
                 </div>
                 {% endif %}
@@ -703,16 +736,18 @@ button:hover {
             <h3>done</h3>
             {% for task in sprint.tasks %}
                 {% if task.status == 'done' %}
-                <div class="board-sections__taskCard card" draggable="true" class="card" id="{{ task.id }}">
+                <div class="board-sections__taskCard card confettiTarget"" draggable="true" class="card" id="{{ task.id }}">
+                    <canvas id="confettiCanvas" style="position: absolute; top: 0; left: 0; pointer-events: none;"></canvas>
+
                     <p>
                         {{ task.name }}
                     </p>
-                    <div class="responsibleInfo">
-                            <div class="storyPoints">
-                                {{task.storyPoints}}
-                            </div>
-                            <img src="{{task.responsible.picture}}" alt="" style="width:40px;height:40px;border-radius:50%;transform: scaleX(-1);">
-                    </div>
+                    <div class="responsibleInfo" >
+                        <div class="storyPoints" style="padding-right: 26px;">
+                            {{task.storyPoints}}
+                        </div>
+                        <img src="{{task.responsible.picture}}" alt="" style="width:40px;height:40px;border-radius:50%;transform: scaleX(-1); position: absolute; bottom: -18px; right:-12px">
+                </div>
 
                 </div>
                 {% endif %}
@@ -732,7 +767,7 @@ button:hover {
         <input type="text" name="state">
         <input type="text" name="id">
     </form>
-    
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 <!-- 
     <div class="board">
         <section data-section="todo">
@@ -779,7 +814,21 @@ button:hover {
                 section.appendChild(card); 
                 const newStateForTask = section.querySelector("h3").innerText
                 section.classList.remove('drag-over');
+                if(newStateForTask=="done") {
+                    console.log(event.target)
+                    const rect = event.target.querySelector('.card').getBoundingClientRect();
+                    const x = (rect.left + rect.width / 2) / window.innerWidth;
+                    const y = (rect.top + rect.height / 2) / window.innerHeight;
 
+                    confetti({
+                        particleCount: 25,
+                        spread: 70,
+                        origin: { x: x, y: y }
+                    });
+                }
+
+
+               
 
 
                 try {
@@ -830,24 +879,25 @@ button:hover {
             });
         }
 
-        document.addEventListener("DOMContentLoaded", makeGuestsPicturesTogether);
+        // document.addEventListener("DOMContentLoaded", makeGuestsPicturesTogether);
 
-function makeGuestsPicturesTogether() {
-    const imgs = [...document.querySelectorAll(".sprint-info__guestsPicturesWrapper img")].reverse();
-    let counter = 1;
-    imgs.forEach((img, id) => { 
-        console.log(counter + 15);
-        img.style.position = "absolute";
-        img.style.left = `${counter * 22}px`;
-        counter++;
-    });
-}
+// function makeGuestsPicturesTogether() {
+//     const imgs = [...document.querySelectorAll(".sprint-info__guestsPicturesWrapper img")].reverse();
+//     let counter = 1;
+//     imgs.forEach((img, id) => { 
+//         console.log(counter + 15);
+//         img.style.position = "absolute";
+//         img.style.left = `${counter * 22}px`;
+//         counter++;
+//     });
+// }
 
 const dropdownWrappers = document.querySelectorAll('.sprint-info__dropdownWrapper');
 
 let dropdownState = JSON.parse(localStorage.getItem('dropdownState')) || {};
 
 dropdownWrappers.forEach(wrapper => {
+
   const boardId = wrapper.getAttribute('data-id');
   if (dropdownState[boardId]) {
     wrapper.classList.add("active");
@@ -936,24 +986,39 @@ function toggleDropdownBoard(evt) {
 
 
         let counterClickedOptions = 0
-        document.querySelector(".addTaskBtnActive").addEventListener("click", submitAddTaskForm)
+        const btnsActiveForAddTasks = [...document.querySelectorAll(".addTaskBtnActive")]
+        btnsActiveForAddTasks.forEach((item)=>item.addEventListener("click", submitAddTaskForm))
+        const allOpened = [...document.querySelectorAll(".dropdownOpened")]
+
+    
+        const all  = [...document.querySelectorAll(".selected-option")]
+        all.forEach((item)=>item.addEventListener("click", toggleDropdown))
+        allOpened.forEach((item)=>item.addEventListener("click", selectOption))
+
 
         function submitAddTaskForm(e){
              e.preventDefault()
              if(counterClickedOptions>=1) {
-                document.querySelector("#createTaskForm").submit()
+                e.target.closest(".btnsWrapperPopUp").closest("#createTaskForm").submit()
              }
         }
 
-        function toggleDropdown() {
-            document.getElementById('dropdown').style.display = 
-                document.getElementById('dropdown').style.display === 'block' ? 'none' : 'block';
+        function toggleDropdown(e) {
+            console.log(e.target)
+            e.target.closest(".custom-select").querySelector("#dropdown").style.display = 
+            e.target.closest(".custom-select").querySelector("#dropdown").style.display === 'block' ? 'none' : 'block';
         }
-        function selectOption(name, photo, email) {
-            document.getElementById('selected-img').src = photo;
-            document.getElementById('selected-name').textContent = name;
-            document.getElementById('selected-value').value = email;
-            document.getElementById('dropdown').style.display = 'none';
+        function selectOption(e) {
+            const name = e.target.getAttribute('data-first-name');
+            const photo = e.target.getAttribute('data-photo');
+            const email = e.target.getAttribute('data-email');
+            console.log(name)
+            console.log(photo)
+            console.log(email)
+            e.target.closest(".custom-select").querySelector('#selected-img').src = photo;
+            e.target.closest(".custom-select").querySelector('#selected-name').innerText = name;
+            e.target.closest(".custom-select").querySelector('#selected-value').value = email;
+            e.target.closest(".custom-select").querySelector('.dropdown').style.display = 'none';
             counterClickedOptions++
         }
     

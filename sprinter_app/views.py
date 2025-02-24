@@ -90,43 +90,62 @@ def mainPage(request):
     sprint_list = []
     for sprint in sprints:
         users_info = []
+        creator_info = None  
+
         for participant in sprint.users.all():
             photo_url = get_user_photo(participant.email)
-            users_info.append({
+            participant_info = {
                 'username': participant.username,
                 'first_name': participant.first_name,
                 'last_name': participant.last_name,
                 'email': participant.email,
                 'photo': photo_url,
                 'initials': participant.first_name[0] + participant.last_name[0] if participant.first_name and participant.last_name else '',
-            })
+                'isCreator': participant.email == sprint.created_by.email 
+            }
+            print(sprint.name)
+            print(participant_info)
+
+            if participant.email == sprint.created_by.email:
+                creator_info = participant_info  
+            else:
+                users_info.append(participant_info)  
+
+        if creator_info:
+            users_info.insert(0, creator_info)
+
         tasks = sprint.tasks.all()
         tasks_done = sprint.tasks.filter(status="done")
         task_list = []
 
         for task in tasks:
             responsible = {
-                'email':task.assigned_to.email,
-                'name':task.assigned_to.first_name,
-                'picture':get_user_photo(task.assigned_to.email),
+                'email': task.assigned_to.email,
+                'name': task.assigned_to.first_name,
+                'picture': get_user_photo(task.assigned_to.email),
             }
             task_list.append({
                 'id': task.id,
                 'name': task.name,
                 'status': task.status,
                 'responsible': responsible,
-                'storyPoints':task.storyPoints
+                'storyPoints': task.storyPoints
             })
+
+        # Calculate stats
         if len(task_list) > 0:
-            percentage_done = ((len(tasks_done) / len(task_list)) * 100)
+            percentage_done = (len(tasks_done) / len(task_list)) * 100
             percentage_done = round(percentage_done)
         else:
             percentage_done = 0
+
         stats = {
             'percentageDone': percentage_done,
-            'tasksQuantity':len(task_list),
-            'doneTasksQuantity':len(tasks_done)
+            'tasksQuantity': len(task_list),
+            'doneTasksQuantity': len(tasks_done)
         }
+
+        # Add sprint data to the list
         sprint_list.append({
             'id': sprint.id,
             'name': sprint.name,
@@ -135,9 +154,8 @@ def mainPage(request):
             'created_by': sprint.created_by.username,
             'users': users_info,
             'tasks': task_list,  
-            'stats':stats,
-            'description':sprint.description
-
+            'stats': stats,
+            'description': sprint.description
         })
 
     context = {
@@ -146,7 +164,7 @@ def mainPage(request):
         'email': user.email,
         'userPicture': get_user_photo(user.email),
         'sprints': sprint_list,
-        'quantitySprints':len(sprint_list),
+        'quantitySprints': len(sprint_list),
     }
     return render(request, 'mainPage.html', context)
 
