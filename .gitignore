@@ -2,3 +2,5 @@
 
 .env
 .vercel
+./staticfiles
+staticfiles

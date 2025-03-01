@@ -1,10 +1,18 @@
 {
-    "builds": [
-      {
-        "src": "sprinter_app/wsgi.py",
-        "use": "@vercel/python",
-        "config": { "maxLambdaSize": "55mb", "runtime": "Python3.9" }
-      }
-    ]
-  }
-  
+  "builds": [
+    {
+      "src": "sprinter/wsgi.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/static/(.*)",
+      "dest": "/static/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "sprinter/wsgi.py"
+    }
+  ]
+}

@@ -6,10 +6,10 @@ It exposes the WSGI callable as a module-level variable named ``application``.
 For more information on this file, see
 https://docs.djangoproject.com/en/4.2/howto/deployment/wsgi/
 """
+# wsgi.py
 
 import os
-from django.core.wsgi import get_wsgi_application
+from django.core.wsgi import get_wsgi_application  # Correct import
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'sprinter.settings')  
-application = get_wsgi_application()
-handler = application  
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'sprinter.settings')
+app = get_wsgi_application()
