@@ -4,3 +4,4 @@
 .vercel
 ./staticfiles
 staticfiles
+.env*.local

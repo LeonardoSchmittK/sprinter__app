@@ -2,20 +2,10 @@
   "builds": [
     {
       "src": "sprinter/wsgi.py",
-      "use": "@vercel/python",
-      "config": {
-        "runtime": "python3.9",
-        "wsgi": {
-          "app": "api.wsgi.application"
-        }
-      }
+      "use": "@vercel/python"
     }
   ],
   "routes": [
-    {
-      "src": "/static/(.*)",
-      "dest": "/static/$1"
-    },
     {
       "src": "/(.*)",
       "dest": "sprinter/wsgi.py"

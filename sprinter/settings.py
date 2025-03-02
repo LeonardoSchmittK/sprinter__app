@@ -84,7 +84,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'api.wsgi.app'
+WSGI_APPLICATION = 'sprinter.wsgi.application'
 
 
 # Database
