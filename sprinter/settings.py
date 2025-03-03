@@ -177,7 +177,7 @@ LOGIN_URL = '/login/'
 SOCIALACCOUNT_AUTO_SIGNUP = True
 ACCOUNT_SIGNUP_FORM_CLASS = None
 ACCOUNT_EMAIL_VERIFICATION = "optional"
-
+SOCIALACCOUNT_LOGIN_ON_GET = True
 # Email settings (use console backend for development)
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
