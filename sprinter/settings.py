@@ -33,6 +33,9 @@ DEBUG = False
 ALLOWED_HOSTS = [
 "*"
 ]
+CSRF_TRUSTED_ORIGINS = [
+    "https://sprinterapp-production.up.railway.app"
+]
 
 
 
@@ -181,8 +184,8 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
         'APP': {
-            'client_id': '908118296539-47ub4ndfa071vue9ilgdc6v7o3sg69ud.apps.googleusercontent.com',
-            'secret':'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',
+            'client_id': os.getenv("GOOGLE_CLIENT_ID"),
+            'secret':os.getenv("GOOGLE_CLIENT_SECRET"),
             'key': ''
         },
         'SCOPE': [
