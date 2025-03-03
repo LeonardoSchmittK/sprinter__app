@@ -33,9 +33,8 @@ DEBUG = False
 ALLOWED_HOSTS = [
 "*"
 ]
-CSRF_TRUSTED_ORIGINS = [
-    "https://sprinterapp-production.up.railway.app"
-]
+CSRF_TRUSTED_ORIGINS = ["https://sprinterapp-production.up.railway.app"]
+
 
 
 
@@ -178,6 +177,7 @@ SOCIALACCOUNT_AUTO_SIGNUP = True
 ACCOUNT_SIGNUP_FORM_CLASS = None
 ACCOUNT_EMAIL_VERIFICATION = "optional"
 SOCIALACCOUNT_LOGIN_ON_GET = True
+SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI = "https://sprinterapp-production.up.railway.app/accounts/google/login/callback/"
 # Email settings (use console backend for development)
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
