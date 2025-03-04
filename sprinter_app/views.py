@@ -204,13 +204,34 @@ def create_sprint(request):
 
 def create_task(request, sprint_id):
     if request.method == "POST":
-        sprint = get_object_or_404(Sprint, id=sprint_id)
-        task_name = request.POST.get("name")
-        responsible = request.POST.get("responsible") # email of the user
-        userResponsible = get_object_or_404(User, email = responsible)
-        storyPoints = request.POST.get("storyPoints")
-        Task.objects.create(name=task_name, sprint=sprint, status="todo",assigned_to = userResponsible,storyPoints=storyPoints)
-        return redirect('mainPage') 
+        try:
+            sprint = get_object_or_404(Sprint, id=sprint_id)
+            task_name = request.POST.get("name")
+            responsible_email = request.POST.get("responsible")  # email of the user
+            story_points = request.POST.get("storyPoints")
+
+            # Validate inputs
+            if not task_name or not responsible_email or not story_points:
+                messages.error(request, "All fields are required.")
+                return redirect('mainPage')
+
+            user_responsible = get_object_or_404(User, email=responsible_email)
+
+            Task.objects.create(
+                name=task_name,
+                sprint=sprint,
+                status="todo",
+                assigned_to=user_responsible,
+                storyPoints=story_points
+            )
+
+            messages.success(request, "Task created successfully!")
+            return redirect('mainPage') 
+
+        except IntegrityError:
+            messages.error(request, "A database error occurred while creating the task.")
+        except Exception as e:
+            messages.error(request, f"An error occurred: {str(e)}")
         
     return render(request, 'mainPage.html')
 
