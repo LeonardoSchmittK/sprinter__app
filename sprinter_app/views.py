@@ -14,6 +14,14 @@ from django.core.mail import send_mail
 from .models import Sprint, User
 
 from datetime import datetime
+
+from .utils import list_sprint_files  
+from .utils import upload_sprint_file_s3 
+from .utils import remove_file_s3 
+
+import uuid
+import re
+
 # def mainPage(request):
 #     user = request.user
 
@@ -80,6 +88,15 @@ def get_user_photo(email):
         return picture_url
     else:
         print("Este usuário não possui conta social associada.")
+
+def upload_sprint_file(request, sprint_id):
+    upload_sprint_file_s3(request,sprint_id)
+    return redirect('mainPage')
+
+
+def get_sprint_files(request, sprint_id):
+    result = list_sprint_files(sprint_id)
+    return JsonResponse(result)
 
 def mainPage(request):
     if not request.user.is_authenticated:
@@ -168,6 +185,8 @@ def mainPage(request):
     }
     return render(request, 'mainPage.html', context)
 
+def remove_file(request):
+    return remove_file_s3(request)
 
 
 def finish_sprint(request, sprint_id):
@@ -192,6 +211,7 @@ def create_sprint(request):
             end_date=end_date,
             description=description,
             created_by=request.user,
+            s3_folder = f"{request.user.email.lower()}-{re.sub(r'[^a-zA-Z0-9]+', '-', name.lower())}-{uuid.uuid4().hex[:10]}"
         )
         
         sprint.users.add(request.user)
@@ -210,7 +230,6 @@ def create_task(request, sprint_id):
             responsible_email = request.POST.get("responsible")  # email of the user
             story_points = request.POST.get("storyPoints")
 
-            # Validate inputs
             if not task_name or not responsible_email or not story_points:
                 messages.error(request, "All fields are required.")
                 return redirect('mainPage')

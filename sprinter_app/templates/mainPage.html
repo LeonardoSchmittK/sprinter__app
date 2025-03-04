@@ -445,16 +445,69 @@ button:hover {
 }
 
 .creator::after {
-  content: "👑"; 
+  content: "";
   position: absolute; 
-  top: 0; 
-  left: -5px;
-  font-size: 20px; 
-  z-index: 1; 
-  width: 5px;
-  height: 5px;
-  transform: scale(0.5);
+  top: -15px; 
+  left: -17px;
+  width: 35px;  /* Set an appropriate width */
+  height: 35px; /* Set an appropriate height */
+  background: url("https://i.ibb.co/qFPQvG9M/pngtree-3d-texture-golden-crown-png-image-4364634-removebg-preview.png") no-repeat center center;
+  background-size: cover; /* Ensure the image scales properly */
+  transform: scale(0.5) rotate(-45deg); /* Scale down the image */
+  z-index: 1;
 }
+
+
+    .uploaded-files {
+        list-style: none;
+        width: 100%;
+        margin-top: 20px;
+        border-top: 3px dashed rgba(128, 128, 128, 0.096);
+        padding-top: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+
+    }
+
+    .uploaded-files li {
+         background-color: var(--blue-light);
+         padding: 8px;
+         border-radius: 6px;
+         display: flex;
+        flex-direction: row;
+        width: 100%;
+        padding: 16px;
+    }
+
+    .uploaded-files a {
+        text-decoration: none;
+        color: var(--blue-dark);
+        flex: 1;
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+    }
+
+
+    .removeFileBtn {
+
+    flex-direction: row;
+    padding: 5px;
+    cursor: pointer;
+    background-color: transparent !important;
+
+}
+
+.removeFileBtn svg {
+    width: 20px;
+    height: 20px;
+    fill: currentColor;
+    stroke: currentColor;
+    transition: transform 0.2s ease-in-out;
+}
+
+
 
     </style>
 </head>
@@ -546,7 +599,8 @@ button:hover {
     {% for participant in sprint.users %}
         
         <span  class="{% if participant.isCreator %}creator{% endif %}" style="position: absolute; top: 0; left: 0; transform: translateX({{ forloop.counter0|multiply:30 }}px) translateY({{ forloop.counter0|multiply:1 }}px);">
-      <img 
+                
+            <img 
         src="{{ participant.photo }}" 
         alt="{{ participant.first_name }}" 
         style="width:40px;height:40px;border-radius:50%;transform: scaleX(-1);" 
@@ -595,8 +649,8 @@ button:hover {
     <div class="sprint-info__actionsBtns">
         <button class="actionBtns__btn" onclick="document.querySelector('#popupAdd-{{ sprint.id }}').classList.add('visible')">+ Tarefa</button>
         <button class="actionBtns__btn" onclick="document.querySelector('#popupAddGuest-{{ sprint.id }}').classList.add('visible')">+ Convidado</button>
-        <button class="actionBtns__btn" onclick="document.querySelector('#popupAddGuest-{{ sprint.id }}').classList.add('visible')">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+        <button class="actionBtns__btn openRepo" onclick="document.querySelector('#repo-{{ sprint.id }}').classList.add('visible')">
+            <svg style="pointer-events: none;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" />
               </svg>
             Repositório
@@ -658,6 +712,35 @@ button:hover {
         </div>
     </div>
 
+    <div id="repo-{{ sprint.id }}" class="popupAdd invisible popup">
+        <div class="popupMessage">
+            <form id="uploadFileForm" action="{% url 'upload_sprint_file' sprint.id %}" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <h2>Repositório de Arquivos</h2>
+                <p>{{ sprint.name }}</p>
+    
+                <div class="inputWrapper">
+                    <label for="file">Upload Arquivo</label>
+                    <input type="file" id="fileUpload" name="file" multiple required>
+                    <div id="filePreview"></div>
+                      
+                <div class="btnsWrapperPopUp">
+                    <button class="closePopUpBtn" type="button" onclick="document.querySelector('#repo-{{ sprint.id }}').classList.remove('visible')">Fechar</button>
+                    <button class="addTaskBtn" type="submit">Enviar Arquivo</button>
+                </div>
+                </div>
+    
+            </form>
+                <div class="uploaded-files">
+                    <h3>Arquivos Enviados:</h3>
+                    <ul id="uploadedFilesList">
+
+                    </ul>
+                </div>
+  
+        </div>
+    </div>
+
     <div id="popupAddGuest-{{ sprint.id }}" class="popupAddGuest invisible popup">
         <div class="popupMessage">
             <form action="{% url 'add_guest' sprint.id %}" method="post">
@@ -690,7 +773,7 @@ button:hover {
         </div>
       </div>
 
-    <div class="board-sections">
+    <div class="board-sections" data-id="{{sprint.id}}">
         <section data-section="todo" class="sectionDroppable">
             <h3>todo</h3>
             {% for task in sprint.tasks %}
@@ -1027,6 +1110,126 @@ function toggleDropdownBoard(evt) {
                 document.getElementById('dropdown').style.display = 'none';
             }
         });
+
+
+        [...document.querySelectorAll(".openRepo")].forEach((openRepo) => {
+    openRepo.addEventListener("click", async function (event) {
+        const boardSections = event.target.closest(".board").querySelector(".board-sections");
+        const id = boardSections.getAttribute("data-id");
+
+        if (id) {
+            const url = `/sprint/${id}/files/`;
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                console.log("Fetched Data:", data);
+
+                if (data.message === "No files found in this folder") {
+                    document.querySelector(".noFiles").style.display = "block";
+                } else {
+                    const ul = document.querySelector("#repo-"+id).querySelector(".uploaded-files");
+                    ul.innerHTML = ""; // Clear any existing list items
+
+                    data.files.forEach(file => {
+                        const li = document.createElement("li");
+                        const a = document.createElement("a");
+                        const buttonRemoveFile = `
+                        <button class="removeFileBtn" type='button' onclick="removeFile(event, ${id}, '${file.filename}')">
+                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+</svg>
+
+                        </button>
+                        `;
+                        a.href = file.file_url;
+                        a.textContent = file.filename;
+                        li.appendChild(a);
+                        ul.appendChild(li);
+                        li.innerHTML += buttonRemoveFile;
+                    });
+                }
+            } catch (error) {
+                console.error("Error fetching files:", error);
+            }
+        }
+    });
+});
+
+function removeFile(e, sprintId, fileName) {
+    e.preventDefault();
+    
+    fetch('/remove_file/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken') 
+        },
+        body: JSON.stringify({
+            sprint_id: sprintId,
+            file_name: fileName
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            e.target.closest('li').remove(); // Remove the <li> element
+        } 
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// document.getElementById("uploadFileForm").addEventListener("submit", async function(event) {
+//     alert("ola")
+//     event.preventDefault(); // Prevent default form submission
+
+//     let formData = new FormData(this);  // Get form data
+
+//     let response = await fetch(this.action, {
+//         method: "POST",
+//         body: formData,
+//         headers: {
+//             "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value
+//         }
+//     });
+
+//     let result = await response.json();
+
+//     if (response.ok) {
+//         alert("Arquivo enviado com sucesso!");
+//         addFileToList(result.file_url, formData.get("file").name);
+//     } else {
+//         alert("Erro ao enviar arquivo: " + result.error);
+//     }
+// });
+
+// function addFileToList(url, name) {
+//     let ul = document.getElementById("uploadedFilesList");
+//     let li = document.createElement("li");
+//     let a = document.createElement("a");
+//     a.href = url;
+//     a.textContent = name;
+//     a.target = "_blank";
+//     li.appendChild(a);
+//     ul.appendChild(li);
+// }
+
     </script>
 </body>
 </html>

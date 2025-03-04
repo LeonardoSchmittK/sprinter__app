@@ -13,7 +13,7 @@ class Sprint(models.Model):
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="sprints")  
     users = models.ManyToManyField(User, related_name="participating_sprints", blank=True) 
     created_at = models.DateTimeField(auto_now_add=True)
-
+    s3_folder =  models.CharField(max_length=255,default="") 
 
     def __str__(self):
         return self.name

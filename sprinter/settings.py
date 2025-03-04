@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
+    'allauth.socialaccount.providers.discord',
     'sprinter_app',
 
 ]
@@ -182,11 +183,22 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI = "https://sprinterapp-production.up.rail
 # Email settings (use console backend for development)
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
+
+# AWS SETTINGS
+
+AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')  
+AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME = "sprinter-app"
+AWS_S3_REGION_NAME = "sa-east-1"
+AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
+
+DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
         'APP': {
             'client_id': os.getenv("GOOGLE_CLIENT_ID"),
-            'secret':os.getenv("GOOGLE_CLIENT_SECRET"),
+            'secret': os.getenv("GOOGLE_CLIENT_SECRET"),
             'key': ''
         },
         'SCOPE': [
@@ -196,5 +208,18 @@ SOCIALACCOUNT_PROVIDERS = {
         'AUTH_PARAMS': {
             'access_type': 'online',
         },
+    },
+    'discord': {
+        'APP': {
+            'client_id': os.getenv("DISCORD_CLIENT_ID"), 
+            'secret': os.getenv("DISCORD_CLIENT_SECRET"), 
+            'key': ''
+        },
+        'SCOPE': [
+            'identify', 
+            'email',
+        ]
+ 
     }
 }
+
