@@ -1,1 +1,2 @@
-web: python manage.py migrate && gunicorn sprinter.wsgi --log-file -
+release: python manage.py collectstatic --noinput && python manage.py migrate
+web: gunicorn sprinter.wsgi --log-file -
