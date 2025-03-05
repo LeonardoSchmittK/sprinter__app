@@ -72,7 +72,7 @@ ROOT_URLCONF = 'sprinter.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')],  # Add templates directory
+        'DIRS': [BASE_DIR / "templates"],  # Make sure this line exists
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

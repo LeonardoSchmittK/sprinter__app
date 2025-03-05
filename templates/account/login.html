@@ -1,0 +1,245 @@
+<style>
+  * {
+     padding: 0;
+     margin: 0;
+     list-style: none;
+     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+  }
+  
+  :root { 
+            --grey-light: #f6f6f654;
+            --grey-light-darker: #fcfcfc;
+            --blue-dark:#122D46;
+            --blue-light:#B4DBFF;
+            --red-light:#FE5E61;
+            --red-darker:#812424;
+            --text-color-grey:#686565;
+        }
+
+  main {
+     margin: auto;
+     width: 25%;
+     height: 100vh;
+     display: flex;
+    flex-direction: column;
+    gap: 25px;
+    padding: 2em;
+    border-radius: 15px;
+  }
+
+  
+  input {
+        border: 1px solid var(--blue-dark);
+        padding: 8px;
+        border-radius: 4px;         
+        font-size: 16px;
+        width: 100%;
+        background-color: #fff;
+    }
+
+    input:-webkit-autofill {
+    background-color: #fff !important;
+    -webkit-box-shadow: 0 0 0px 1000px white inset !important;
+    box-shadow: 0 0 0px 1000px white inset !important;
+    color: #333 !important; /* Adjust text color if needed */
+}
+
+
+    a {
+       text-decoration: none;
+    }
+
+    
+.inputWrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    justify-content: left;
+    align-items:start;
+    width: 100%;
+}
+
+.inputWrapper label {
+     font-size: 12px;
+     color: var(--blue-dark);
+}
+
+button {
+   outline: 0;
+   border: 0;
+   cursor: pointer;
+}
+
+.primaryAction {
+        width: fit-content;
+        display: flex;
+        justify-content: center ;
+        align-items: center;
+        gap: 15px;
+        background-color: var(--blue-light);
+        color: var(--blue-dark);
+        padding: 8px 12px;
+        border-radius: 12px;
+        font-family: Inter;
+        font-weight: bold;
+        transition: all 100ms linear;
+        width: 100%;
+        padding: 15px;
+        font-size: 16px;
+       
+}
+
+  .form form{
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .btn.google {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100% !important;
+    padding: 12px;
+    background-color: #ffffff;
+    color: #757575;
+    font-size: 16px;
+    font-weight: 500;
+    border: 1px solid #dcdcdc;
+    border-radius: 8px;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease-in-out;
+    cursor: pointer;
+    width: 100%;
+}
+
+.btn.google:hover {
+    background-color: #f1f1f16c;
+}
+
+.btn.google svg {
+    margin-right: 10px;
+}
+
+.socialaccount_ballot {
+  width: 100%;
+}
+
+
+.socialaccount_providers {
+  width: 100%;
+   
+}
+
+
+</style>
+{% extends "account/base.html" %}
+
+{% load i18n %}
+{% load account socialaccount %}
+
+{% block head_title %}{% trans "Sign In" %}{% endblock %}
+
+{% block content %}
+{{ auth_error }}
+<main>
+  <header>
+    <h1>{% trans "Acesse suas sprints" %}</h1>
+
+    
+    {% get_providers as socialaccount_providers %}
+    
+    {% if socialaccount_providers %}
+    <p style="display: none;">{% blocktrans with site.name as site_name %}Please sign in with one
+      of your existing third party accounts. Or, <a href="{{ signup_url }}">sign up</a>
+      for a {{ site_name }} account and sign in below:{% endblocktrans %}</p>
+      
+      <p>
+        Por favor, acesse sua conta com uma das seguintes opções.
+      </p>
+    </header>
+
+
+
+{% include "socialaccount/snippets/login_extra.html" %}
+
+{% else %}
+<p>{% blocktrans %}If you have not created an account yet, then please
+<a href="{{ signup_url }}">sign up</a> first.{% endblocktrans %}</p>
+{% endif %}
+
+<div class="form">
+
+<form class="login" method="POST" action="{% url 'account_login' %}">
+    {% csrf_token %}
+    {{ form.as_p }}
+    {% if redirect_field_value %}
+    <div class="inputWrapper">
+      <input class="input" type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+    </div>
+    
+    {% endif %}
+    <a class="button secondaryAction" href="{% url 'account_reset_password' %}">{% trans "Forgot Password?" %}</a>
+    <button class="primaryAction" type="submit">{% trans "Sign In" %}</button>
+    <!-- <hr style="opacity: 0.1; margin-top: 20px;margin-bottom: 20px;"> -->
+    <p style="text-align: center;">Ou entre com:</p>
+</form>
+
+</div>
+
+<div class="socialaccount_ballot">
+  <ul class="socialaccount_providers">
+    {% for provider in socialaccount_providers %}
+      <li>
+        <a class="btn {{ provider.name|lower }}" href="{% provider_login_url provider.id process="login" %}">
+          {% if provider.name == "Google" %}
+            <svg
+              version="1.1"
+              width="20"
+              id="Layer_1"
+              xmlns="http://www.w3.org/2000/svg"
+              xmlns:xlink="http://www.w3.org/1999/xlink"
+              x="0px"
+              y="0px"
+              viewBox="0 0 512 512"
+              style="enable-background:new 0 0 512 512;"
+              xml:space="preserve"
+            >
+              <path style="fill:#FBBB00;" d="M113.47,309.408L95.648,375.94l-65.139,1.378C11.042,341.211,0,299.9,0,256
+              c0-42.451,10.324-82.483,28.624-117.732h0.014l57.992,10.632l25.404,57.644c-5.317,15.501-8.215,32.141-8.215,49.456
+              C103.821,274.792,107.225,292.797,113.47,309.408z"></path>
+              <path style="fill:#518EF8;" d="M507.527,208.176C510.467,223.662,512,239.655,512,256c0,18.328-1.927,36.206-5.598,53.451
+              c-12.462,58.683-45.025,109.925-90.134,146.187l-0.014-0.014l-73.044-3.727l-10.338-64.535
+              c29.932-17.554,53.324-45.025,65.646-77.911h-136.89V208.176h138.887L507.527,208.176L507.527,208.176z"></path>
+              <path style="fill:#28B446;" d="M416.253,455.624l0.014,0.014C372.396,490.901,316.666,512,256,512
+              c-97.491,0-182.252-54.491-225.491-134.681l82.961-67.91c21.619,57.698,77.278,98.771,142.53,98.771
+              c28.047,0,54.323-7.582,76.87-20.818L416.253,455.624z"></path>
+              <path style="fill:#F14336;" d="M419.404,58.936l-82.933,67.896c-23.335-14.586-50.919-23.012-80.471-23.012
+              c-66.729,0-123.429,42.957-143.965,102.724l-83.397-68.276h-0.014C71.23,56.123,157.06,0,256,0
+              C318.115,0,375.068,22.126,419.404,58.936z"></path>
+            </svg>
+          {% elif provider.name == "Discord" %}
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M20.222 3.166A19.837 19.837 0 0015.58 2c-.248.442-.471.898-.67 1.365a18.596 18.596 0 00-5.84 0 14.282 14.282 0 00-.673-1.365 19.836 19.836 0 00-4.642 1.166C1.766 6.444 1.056 9.646 1.056 12.8c0 .221.003.44.008.658a13.16 13.16 0 004.644 2.346c.36-.485.679-.993.952-1.52a9.93 9.93 0 01-1.577-.754l.128-.104c3.058 1.548 6.41 1.548 9.466 0l.13.104c-.515.294-1.039.55-1.576.754.273.527.592 1.035.952 1.52a13.16 13.16 0 004.644-2.346c.005-.218.008-.437.008-.658 0-3.154-.71-6.356-2.222-9.634zM9.216 10.048c-.803 0-1.457.733-1.457 1.635 0 .903.65 1.636 1.457 1.636s1.457-.733 1.457-1.636c0-.902-.65-1.635-1.457-1.635zm5.568 0c-.803 0-1.457.733-1.457 1.635 0 .903.65 1.636 1.457 1.636s1.457-.733 1.457-1.636c0-.902-.65-1.635-1.457-1.635z" fill="currentColor"/>
+            </svg>
+          {% endif %}
+          Entrar com {{ provider.name }}
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+</div>
+
+
+
+</div>
+{% endblock %}
+</main>
+
+<script>
+  document.addEventListener("DOMContentLoaded",()=> {
+     
+    document.querySelector("#id_remember").parentNode.classList.add("fatherRemember")
+  })
+  alert("ola")
+</script>
