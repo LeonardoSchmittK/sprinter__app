@@ -21,55 +21,8 @@ from .utils import remove_file_s3
 
 import uuid
 import re
+import json
 
-# def mainPage(request):
-#     user = request.user
-
-#     context = {
-#         'is_authenticated': False,
-#     }
-
-#     if user.is_authenticated:
-#         try:
-#             social_account = SocialAccount.objects.get(user=user, provider='google')
-#             extra_data = social_account.extra_data
-#         except SocialAccount.DoesNotExist:
-#             extra_data = {}
-
-#         steam_games = []
-#         steam_error = None
-#         steam_id = extra_data.get('id')  
-
-#         if steam_id:
-#             url = "https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/"
-#             params = {
-#                 'key': "3A3521710B5A489B9EED5681A92788CB",
-#                 'steamid': 76561199015636727,
-#                 'include_appinfo': True,
-#                 'include_played_free_games': True,
-#             }
-
-#             try:
-#                 response = requests.get(url, params=params)
-#                 response.raise_for_status()
-#                 data = response.json()
-#                 print("DATA")
-#                 steam_games = data.get('response', {}).get('games', [])
-#                 print(steam_games)
-
-#             except requests.RequestException as e:
-#                 steam_error = str(e)
-
-#         context = {
-#             'is_authenticated': True,
-#             'username': user.get_full_name(),
-#             'email': user.email,
-#             'google_data': extra_data,
-#             'steam_games': steam_games,
-#             'steam_error': steam_error,
-#         }
-
-#     return render(request, "mainPage.html", context)
 
 from django.db.models import Q
 
@@ -103,9 +56,17 @@ def mainPage(request):
         return redirect('account_login')  
 
     user = request.user  
-    sprints = Sprint.objects.filter(Q(created_by=user) | Q(users=user)).distinct()
+    archived_filter = request.POST.get('archived', 'false')  # Default to 'false' if not selected
+
+    # Filter the sprints based on the 'archived' filter
+    if archived_filter == 'true':
+        sprints = Sprint.objects.filter(Q(created_by=user) | Q(users=user), is_archived=True).distinct()
+    else:
+        sprints = Sprint.objects.filter(Q(created_by=user) | Q(users=user), is_archived=False).distinct()
+
     sprint_list = []
     for sprint in sprints:
+        # Add your logic to process and display sprints
         users_info = []
         creator_info = None  
 
@@ -120,9 +81,6 @@ def mainPage(request):
                 'initials': participant.first_name[0] + participant.last_name[0] if participant.first_name and participant.last_name else '',
                 'isCreator': participant.email == sprint.created_by.email 
             }
-            print(sprint.name)
-            print(participant_info)
-
             if participant.email == sprint.created_by.email:
                 creator_info = participant_info  
             else:
@@ -162,17 +120,18 @@ def mainPage(request):
             'doneTasksQuantity': len(tasks_done)
         }
 
-        # Add sprint data to the list
         sprint_list.append({
             'id': sprint.id,
             'name': sprint.name,
             'start_date': sprint.start_date.strftime("%d/%m"),
             'end_date': sprint.end_date.strftime("%d/%m"),
             'created_by': sprint.created_by.username,
+            'created_by_email': sprint.created_by.email,
             'users': users_info,
             'tasks': task_list,  
             'stats': stats,
-            'description': sprint.description
+            'description': sprint.description,
+            'is_archived': sprint.is_archived,
         })
 
     context = {
@@ -182,8 +141,10 @@ def mainPage(request):
         'userPicture': get_user_photo(user.email),
         'sprints': sprint_list,
         'quantitySprints': len(sprint_list),
+        'archived_filter': archived_filter,
     }
     return render(request, 'mainPage.html', context)
+
 
 def remove_file(request):
     return remove_file_s3(request)
@@ -274,6 +235,85 @@ def update_task_state(request):
 
     return JsonResponse({'success': False, 'message': 'Invalid request method.'})
 
+def archive_sprint(request, sprint_id):
+    sprint = get_object_or_404(Sprint, id=sprint_id)
+    sprint.is_archived = True  
+    sprint.save()
+    send_sprint_finished_email()
+    return redirect("mainPage")  
+
+def remove_guest(request, sprint_id):
+    if request.method == "POST":
+        guest_email = request.POST.get("responsible")
+
+        sprint = get_object_or_404(Sprint, id=sprint_id)
+
+        try:
+            guest_user = User.objects.get(email=guest_email)
+
+            if guest_user in sprint.users.all():
+                sprint_creator = sprint.created_by 
+
+                tasks = sprint.tasks.filter(assigned_to=guest_user)
+                tasks.update(assigned_to=sprint_creator)
+
+                sprint.users.remove(guest_user)
+                sprint.save()
+
+                return redirect("mainPage") 
+            else:
+                return JsonResponse({"success": False, "message": "User is not a guest in this sprint."})
+
+        except User.DoesNotExist:
+            return JsonResponse({"success": False, "message": "User not found."})
+
+        return redirect("mainPage") 
+
+
+def send_sprint_finished_email():
+    send_mail(
+    subject="Teste de Email SES",
+    message="Olá, este é um teste de email enviado pelo Amazon SES via Django!",
+    from_email="leoeyeschmittk@gmail.com",
+    recipient_list=["testetestando1234mibo@gmail.com"],
+    fail_silently=False,
+)
+    print("email enviado")
+
+def update_task(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+
+        task_id = data.get('idToEdit')
+        new_name = data.get('newName')
+        story_points = data.get('newStoryPoints')
+        new_email = data.get('newEmail')
+        try:
+            task = Task.objects.get(id=task_id)
+
+            if new_name:
+                task.name = new_name
+
+            if story_points is not None:
+                task.storyPoints = story_points
+
+            if new_email: 
+                try:
+                    new_user = User.objects.get(email=new_email)
+                    task.assigned_to = new_user
+                except User.DoesNotExist:
+                    return JsonResponse({'success': False, 'message': 'User not found with this email.'})
+
+            task.save()
+            return JsonResponse({'success': True, 'message': 'Task updated successfully.'})
+        except Task.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Task not found.'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)})
+
+    return JsonResponse({'success': False, 'message': 'Invalid request method.'})
+
+
 def add_guest(request, sprint_id):
     sprint = get_object_or_404(Sprint, id=sprint_id)
     if request.method == "POST":
@@ -293,3 +333,10 @@ def add_guest(request, sprint_id):
         else:
             messages.error(request, "Por favor, informe um email válido.")
     return render(request, 'mainPage.html') 
+
+def remove_task(request):
+    data = json.loads(request.body)
+    taskToRemove = get_object_or_404(Task, id=data["idToRemove"])
+    taskToRemove.delete()
+    
+    return JsonResponse({"success": "Task removida com sucesso!"}, status=200)

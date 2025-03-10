@@ -19,7 +19,7 @@
     </div>
     {% endif %}
 
-    <div>
+    <div style="display: none;">
       <strong>Menu:</strong>
       <ul>
         {% if user.is_authenticated %}
@@ -37,4 +37,5 @@
     {% block extra_body %}
     {% endblock %}
   </body>
+
 </html>

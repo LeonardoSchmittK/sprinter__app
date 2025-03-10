@@ -182,7 +182,13 @@ SOCIALACCOUNT_LOGIN_ON_GET = True
 SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI = "https://sprinterapp-production.up.railway.app/accounts/google/login/callback/"
 # Email settings (use console backend for development)
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-
+EMAIL_HOST = "email-smtp.sa-east-1.amazonaws.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+EMAIL_HOST_USER = "leoeyeschmittk@gmail.com"
+EMAIL_HOST_PASSWORD = "Leoskeye18900742!GOOGLE"
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 # AWS SETTINGS
 
