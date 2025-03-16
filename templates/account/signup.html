@@ -1,25 +1,243 @@
 {% extends "account/base.html" %}
 
 {% load i18n %}
+{% load account socialaccount %}
 
 {% block head_title %}{% trans "Signup" %}{% endblock %}
 {{ auth_error }}
 
 {% block content %}
 <style>
+  * {
+     padding: 0;
+     margin: 0;
+     list-style: none;
+     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+  }
   
+  :root { 
+            --grey-light: #f6f6f654;
+            --grey-light-darker: #fcfcfc;
+            --blue-dark:#122D46;
+            --blue-light:#B4DBFF;
+            --red-light:#FE5E61;
+            --red-darker:#812424;
+            --text-color-grey:#686565;
+        }
+
+  main {
+     margin: auto;
+     width: 25%;
+     height: 100vh;
+     display: flex;
+    flex-direction: column;
+    gap: 25px;
+    padding: 2em;
+    border-radius: 15px;
+  }
+
+  main + div {
+     display: none;
+  }
+
+  
+  input {
+        border: 1px solid var(--grey-light);
+        padding: 8px;
+        border-radius: 4px;         
+        font-size: 16px;
+        width: 100%;
+        background-color: #fff;
+    }
+
+    input:-webkit-autofill {
+    background-color: #fff !important;
+    -webkit-box-shadow: 0 0 0px 1000px white inset !important;
+    box-shadow: 0 0 0px 1000px white inset !important;
+    color: #333 !important; /* Adjust text color if needed */
+}
+
+
+    a {
+       text-decoration: none;
+    }
+
+    
+.inputWrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    justify-content: left;
+    align-items:start;
+    width: 100%;
+}
+
+.inputWrapper label {
+     font-size: 12px;
+     color: var(--blue-dark);
+}
+
+button {
+   outline: 0;
+   border: 0;
+   cursor: pointer;
+}
+
+.primaryAction {
+        width: fit-content;
+        display: flex;
+        justify-content: center ;
+        align-items: center;
+        gap: 15px;
+        background-color: var(--blue-light);
+        color: var(--blue-dark);
+        padding: 8px 12px;
+        border-radius: 12px;
+        font-family: Inter;
+        font-weight: bold;
+        transition: all 100ms linear;
+        width: 100%;
+        padding: 15px;
+        font-size: 16px;
+       
+}
+
+  .form form{
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .btn.google {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100% !important;
+    padding: 12px;
+    background-color: #ffffff;
+    color: #757575;
+    font-size: 16px;
+    font-weight: 500;
+    border: 1px solid #dcdcdc;
+    border-radius: 8px;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease-in-out;
+    cursor: pointer;
+    width: 100%;
+}
+
+.btn.google:hover {
+    background-color: #f1f1f16c;
+}
+
+.btn.discord {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100% !important;
+    padding: 12px;
+    background-color: #5865F2; /* Cor principal do Discord */
+    color: #ffffff;
+    font-size: 16px;
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s ease-in-out, transform 0.2s ease;
+    cursor: pointer;
+    transition: all 100ms linear;
+
+    &:hover {
+        background-color: rgba(66, 79, 219, 0.925);
+        transition: all 100ms linear;
+    }
+
+   
+
+}
+
+.btn.google svg {
+    margin-right: 10px;
+}
+
+.socialaccount_ballot {
+  width: 100%;
+}
+
+.socialaccount_providers {
+   display: flex;
+   flex-direction: column;
+   gap: 1em;
+  width: 100%;
+
+}
+
+.socialaccount_providers svg{
+  width: 20px;
+  height: 20px;
+   
+}
+
+
+/* retirar as mensagens do topo, como por exemplo: você saiu do sistema  */
+.messages {
+    display: none !important;
+}
+
 </style>
-<h1>{% trans "Sign Up" %}</h1>
 
-<p>{% blocktrans %}Already have an account? Then please <a href="{{ login_url }}">sign in</a>.{% endblocktrans %}</p>
+<main>
+  <header>
+    <h1>Acesse suas sprints</h1>
+    <p style="margin-top: 10px;">
+      Por favor, acesse sua conta com uma das seguintes opções.
+    </p>
+  </header>
 
-<form class="signup" id="signup_form" method="post" action="{% url 'account_signup' %}">
-  {% csrf_token %}
-  {{ form.as_p }}
-  {% if redirect_field_value %}
-  <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+  <div class="form">
+    <form class="signup" id="signup_form" method="post" action="{% url 'account_signup' %}">
+      {% csrf_token %}
+      {{ form.as_p }}
+      {% if redirect_field_value %}
+      <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+      {% endif %}
+      <button class="primaryAction" type="submit">{% trans "Sign Up" %} &raquo;</button>
+      <a href="{% url 'account_login' %}">Já tem uma conta? Faça login aqui.</a>
+    </form>
+  </div>
+
+  {% get_providers as socialaccount_providers %}
+  {% if socialaccount_providers %}
+    <hr style="opacity: 0.1; margin-top: 20px;margin-bottom: 20px;">
+    <p style="text-align: center;">Ou entre com:</p>
+
+    <div class="socialaccount_ballot">
+      <ul class="socialaccount_providers">
+        {% for provider in socialaccount_providers %}
+          <li>
+            <a class="btn {{ provider.name|lower }}" href="{% provider_login_url provider.id process="login" %}">
+              {% if provider.name == "Google" %}
+              <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M23.9996 19.6363V28.9309H36.916C36.3488 31.9199 34.6468 34.4509 32.0941 36.1527L39.8831 42.1964C44.4213 38.0075 47.0395 31.8547 47.0395 24.5456C47.0395 22.8438 46.8868 21.2073 46.6031 19.6366L23.9996 19.6363Z" fill="#4285F4"/>
+                <path d="M10.5494 28.568L8.79263 29.9128L2.57434 34.7564C6.52342 42.589 14.6174 48 23.9991 48C30.4789 48 35.9116 45.8618 39.8826 42.1964L32.0936 36.1528C29.9554 37.5927 27.2281 38.4656 23.9991 38.4656C17.7591 38.4656 12.4575 34.2547 10.5592 28.5819L10.5494 28.568Z" fill="#34A853"/>
+                <path d="M2.57436 13.2436C0.938084 16.4726 0 20.1163 0 23.9999C0 27.8834 0.938084 31.5271 2.57436 34.7561C2.57436 34.7777 10.5599 28.5597 10.5599 28.5597C10.08 27.1197 9.79624 25.5925 9.79624 23.9996C9.79624 22.4067 10.08 20.8795 10.5599 19.4395L2.57436 13.2436Z" fill="#FBBC05"/>
+                <path d="M23.9996 9.55636C27.5342 9.55636 30.676 10.7781 33.1851 13.1345L40.0577 6.2619C35.8904 2.37833 30.4797 0 23.9996 0C14.6179 0 6.52342 5.38908 2.57434 13.2437L10.5597 19.44C12.4578 13.7672 17.7596 9.55636 23.9996 9.55636Z" fill="#EA4335"/>
+                </svg>
+                
+              {% elif provider.name == "Discord" %}
+              <svg width="48" height="37" viewBox="0 0 48 37" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M40.634 3.31127C37.5747 1.90751 34.294 0.873274 30.8638 0.280927C30.8013 0.269495 30.7389 0.298065 30.7067 0.355205C30.2848 1.10563 29.8175 2.08463 29.4902 2.85412C25.8008 2.30178 22.1304 2.30178 18.5166 2.85412C18.1893 2.06753 17.705 1.10563 17.2811 0.355205C17.249 0.299971 17.1866 0.271402 17.1241 0.280927C13.6958 0.871381 10.4151 1.90561 7.35387 3.31127C7.32737 3.32269 7.30465 3.34176 7.28958 3.3665C1.06678 12.6632 -0.6379 21.7314 0.19836 30.6872C0.202144 30.731 0.22674 30.7729 0.260796 30.7996C4.36642 33.8147 8.34341 35.6451 12.2466 36.8583C12.309 36.8774 12.3752 36.8546 12.415 36.8031C13.3383 35.5423 14.1613 34.2128 14.867 32.8147C14.9086 32.7328 14.8688 32.6357 14.7837 32.6033C13.4783 32.1081 12.2352 31.5043 11.0395 30.8187C10.9449 30.7634 10.9373 30.6281 11.0243 30.5634C11.2759 30.3748 11.5276 30.1786 11.7679 29.9805C11.8114 29.9444 11.872 29.9367 11.9231 29.9596C19.7786 33.5461 28.2831 33.5461 36.0459 29.9596C36.097 29.9348 36.1576 29.9425 36.203 29.9787C36.4433 30.1767 36.6949 30.3748 36.9484 30.5634C37.0354 30.6281 37.0298 30.7634 36.9352 30.8187C35.7394 31.5176 34.4964 32.1081 33.189 32.6014C33.1039 32.6338 33.0661 32.7328 33.1077 32.8147C33.8285 34.2108 34.6515 35.5403 35.5578 36.8012C35.5956 36.8546 35.6637 36.8774 35.7262 36.8583C39.6483 35.6451 43.6252 33.8147 47.7309 30.7996C47.7668 30.7729 47.7895 30.7329 47.7933 30.6891C48.7942 20.3352 46.117 11.3414 40.6964 3.3684C40.6832 3.34176 40.6605 3.32269 40.634 3.31127ZM16.04 25.2341C13.675 25.2341 11.7263 23.0628 11.7263 20.3962C11.7263 17.7297 13.6372 15.5584 16.04 15.5584C18.4617 15.5584 20.3916 17.7487 20.3538 20.3962C20.3538 23.0628 18.4428 25.2341 16.04 25.2341ZM31.9895 25.2341C29.6245 25.2341 27.6758 23.0628 27.6758 20.3962C27.6758 17.7297 29.5867 15.5584 31.9895 15.5584C34.4113 15.5584 36.3411 17.7487 36.3033 20.3962C36.3033 23.0628 34.4113 25.2341 31.9895 25.2341Z" fill="white"/>
+                </svg>
+                
+              {% endif %}
+              Entrar com {{ provider.name }}
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
   {% endif %}
-  <button type="submit">{% trans "Sign Up" %} &raquo;</button>
-</form>
+</main>
 
 {% endblock %}
+

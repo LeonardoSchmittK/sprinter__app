@@ -168,6 +168,14 @@ AUTHENTICATION_BACKENDS = [
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
 
+
+LANGUAGE_CODE = 'pt-br'
+TIME_ZONE = 'America/Sao_Paulo'
+
+USE_I18N = True
+USE_L10N = True
+USE_TZ = True
+
 # Allauth Account Settings
 ACCOUNT_USERNAME_REQUIRED = False  # Optional: Disable username
 ACCOUNT_AUTHENTICATION_METHOD = 'username'  # Authenticate via email
@@ -189,7 +197,8 @@ EMAIL_USE_SSL = False
 EMAIL_HOST_USER = "leoeyeschmittk@gmail.com"
 EMAIL_HOST_PASSWORD = "Leoskeye18900742!GOOGLE"
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-
+ACCOUNT_USER_MODEL_USERNAME_FIELD = "username"
+ACCOUNT_USERNAME_REQUIRED = True
 # AWS SETTINGS
 
 AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')  

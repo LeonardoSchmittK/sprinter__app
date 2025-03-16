@@ -28,6 +28,14 @@
             --text-color-grey:#686565;
         }
 
+        footer { 
+            width: 100%;
+            opacity: 0.2;
+            position: fixed;
+            bottom: 0;
+            padding: 2em;
+        }
+
         body {
             font-family: Arial, sans-serif;
         }
@@ -632,7 +640,7 @@ margin-top: 40px;
             <img class="userImg" src="{{ userPicture }}" alt="Profile Picture" style="transform:scaleX(-1)">
         {% endif %}
         <div>
-            <h3 class="userCard__salutation">Olá, {{ username }}</h3>
+            <h3 class="userCard__salutation">Olá, {{ username  }}</h3>
             <p class="userCard__description"> {{quantitySprints}} Sprints</p>
             <form action="{% url 'account_logout' %}" method="post">
                 {% csrf_token %}
@@ -657,13 +665,28 @@ margin-top: 40px;
         {% csrf_token %}
         <label for="archived" class="filter-label">Mostrar sprints:</label>
         <select name="archived" id="archived" class="filter-select" onchange="this.form.submit()">
-            <option value="true" {% if request.POST.archived == 'true' %}selected{% endif %}>Finalizadas</option>
-            <option value="false" {% if request.POST.archived == 'false' %}selected{% endif %}>Em curso</option>
+            <option value="true" {% if archived_filter == 'true' %}selected{% endif %}>Finalizadas</option>
+            <option value="false" {% if archived_filter == 'false' %}selected{% endif %}>Em curso</option>
         </select>
     </form>
-    
-    
-    
+
+    {% for message in messages %}
+    {% if "error" in message.tags  %}
+    <div  class="popup visible" id="popupSprint">
+        <div class="popupMessage">
+                <h2>Ocorreu um erro</h2>
+                <p style="margin-top: 10px;">{{message}}</p>
+                <div class="btnsWrapperPopUp">
+                    <button class="closePopUpBtn" type="button" onclick="document.querySelector('#popupSprint').classList.remove('visible')">Fechar</button>
+                    <button class="addTaskBtn" type="submit"  onclick="document.querySelector('#popupSprint').classList.remove('visible')">Ok</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+{% endfor %}
+
+        
 
     <div  class="popup invisible " id="popupSprint">
         <div class="popupMessage">
@@ -874,7 +897,7 @@ margin-top: 40px;
                 </div>
                 <div class="btnsWrapperPopUp">
                     <button class="closePopUpBtn" onclick="document.querySelector('#popupAdd-{{ sprint.id }}').classList.remove('visible')">Fechar</button>
-                    <button class="addTaskBtn addTaskBtnActive" type="button" ">Criar tarefa</button>
+                    <button class="addTaskBtn addTaskBtnActive" type="submit" ">Criar tarefa</button>
                 </div>
             </form>
         </div>
@@ -1093,6 +1116,11 @@ margin-top: 40px;
         <input type="text" name="state">
         <input type="text" name="id">
     </form>
+
+        <footer>
+            <span>v.1.1.0 | made by <a href="https://github.com/LeonardoSchmittk">Leo Schmitt</a></span>
+        </footer>
+
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 <!-- 
     <div class="board">

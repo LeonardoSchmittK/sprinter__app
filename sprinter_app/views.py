@@ -22,6 +22,7 @@ from .utils import remove_file_s3
 import uuid
 import re
 import json
+import boto3
 
 
 from django.db.models import Q
@@ -31,16 +32,8 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 def get_user_photo(email):
-    
-    user_obj = User.objects.get(email=email)
-    social_account = user_obj.socialaccount_set.first()
-    if social_account:
-        google_data = social_account.extra_data
-        initials_avatar_url = f"https://robohash.org/{user_obj.email}"
-        picture_url = google_data.get(initials_avatar_url, initials_avatar_url)
-        return picture_url
-    else:
-        print("Este usuário não possui conta social associada.")
+    return f"https://robohash.org/{email}"  
+
 
 def upload_sprint_file(request, sprint_id):
     upload_sprint_file_s3(request,sprint_id)
@@ -56,9 +49,8 @@ def mainPage(request):
         return redirect('account_login')  
 
     user = request.user  
-    archived_filter = request.POST.get('archived', 'false')  # Default to 'false' if not selected
+    archived_filter = request.POST.get('archived', 'false')  
 
-    # Filter the sprints based on the 'archived' filter
     if archived_filter == 'true':
         sprints = Sprint.objects.filter(Q(created_by=user) | Q(users=user), is_archived=True).distinct()
     else:
@@ -66,7 +58,6 @@ def mainPage(request):
 
     sprint_list = []
     for sprint in sprints:
-        # Add your logic to process and display sprints
         users_info = []
         creator_info = None  
 
@@ -136,7 +127,7 @@ def mainPage(request):
 
     context = {
         'is_authenticated': True,
-        'username': user.get_short_name(),
+        'username': user.get_short_name() or user.username,
         'email': user.email,
         'userPicture': get_user_photo(user.email),
         'sprints': sprint_list,
@@ -192,7 +183,7 @@ def create_task(request, sprint_id):
             story_points = request.POST.get("storyPoints")
 
             if not task_name or not responsible_email or not story_points:
-                messages.error(request, "All fields are required.")
+                messages.error(request, "Todos os campos são obrigatórios para adicionar uma tarefa.")
                 return redirect('mainPage')
 
             user_responsible = get_object_or_404(User, email=responsible_email)
@@ -209,9 +200,9 @@ def create_task(request, sprint_id):
             return redirect('mainPage') 
 
         except IntegrityError:
-            messages.error(request, "A database error occurred while creating the task.")
+            messages.error(request, f"Tente mais tarde, um Erro de banco de dados ocorreu ao criar a tarefa: {str(e)}")
         except Exception as e:
-            messages.error(request, f"An error occurred: {str(e)}")
+            messages.error(request, f"Erro ao criar a tarefa: {str(e)}")
         
     return render(request, 'mainPage.html')
 
@@ -262,23 +253,74 @@ def remove_guest(request, sprint_id):
 
                 return redirect("mainPage") 
             else:
-                return JsonResponse({"success": False, "message": "User is not a guest in this sprint."})
+                return JsonResponse({"success": False, "message": "Usuário não faz parte desta Sprint"})
 
         except User.DoesNotExist:
-            return JsonResponse({"success": False, "message": "User not found."})
+            return JsonResponse({"success": False, "message": "Usuário não encontrado"})
 
         return redirect("mainPage") 
 
 
 def send_sprint_finished_email():
-    send_mail(
-    subject="Teste de Email SES",
-    message="Olá, este é um teste de email enviado pelo Amazon SES via Django!",
-    from_email="leoeyeschmittk@gmail.com",
-    recipient_list=["testetestando1234mibo@gmail.com"],
-    fail_silently=False,
-)
-    print("email enviado")
+    return
+    ses = boto3.client('ses', region_name='sa-east-1')
+
+    response = ses.send_email(
+        Source="leoeyeschmittk@gmail.com",
+        Destination={"ToAddresses": ["leoeyeschmittk@gmail.com","biaarevalofreitas@gmail.com"]},
+        Message={
+            "Subject": {"Data": "Sprint Finalizada 🚀"},
+            "Body": {
+                "Html": {
+                    "Data": """
+                    <!DOCTYPE html>
+                    <html lang="pt-BR">
+                    <head>
+                        <meta charset="UTF-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                        <title>Sprint Concluída</title>
+                        <style>
+                            body {
+                                font-family: Arial, sans-serif;
+                                background-color: #f4f4f4;
+                                padding: 20px;
+                                text-align: center;
+                            }
+                            .container {
+                                max-width: 600px;
+                                background: #ffffff;
+                                padding: 20px;
+                                border-radius: 8px;
+                                box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+                                margin: auto;
+                            }
+                            h1 {
+                                color: #2C3E50;
+                            }
+                            .button {
+                                display: inline-block;
+                                padding: 10px 20px;
+                                color: #fff;
+                                background: #3498db;
+                                text-decoration: none;
+                                border-radius: 5px;
+                                margin-top: 20px;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="container">
+                            </br>
+                        </div>
+                    </body>
+                    </html>
+                    """
+                }
+            }
+        }
+    )
+
+
 
 def update_task(request):
     if request.method == "POST":
@@ -316,23 +358,23 @@ def update_task(request):
 
 def add_guest(request, sprint_id):
     sprint = get_object_or_404(Sprint, id=sprint_id)
+
     if request.method == "POST":
         email = request.POST.get("guestEmail")
         if email:
-
             try:
                 guest = User.objects.get(email=email)
-                print("GUEST")
-                print(guest)
                 sprint.users.add(guest)
-                return redirect('mainPage') 
-
+                return redirect('mainPage')  
             except User.DoesNotExist:
-                print("Usuario nao existe")
+                messages.error(request, "Não é possível adicionar usuários não cadastrados.")
+                return redirect('mainPage') 
 
         else:
             messages.error(request, "Por favor, informe um email válido.")
-    return render(request, 'mainPage.html') 
+            return redirect('mainPage')  
+
+    return redirect('mainPage')
 
 def remove_task(request):
     data = json.loads(request.body)
